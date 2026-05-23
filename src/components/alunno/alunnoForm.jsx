@@ -16,6 +16,7 @@ const schema = yup.object({
   cap: yup.string().matches(/^\d{5}$/, 'Il CAP deve essere di 5 cifre').notRequired(),
   citta: yup.string().notRequired(),
   annoCorso: yup.number().integer().min(1).max(10).notRequired(),
+  dataIscrizione: yup.date().max(new Date(), 'La data di iscrizione deve essere nel passato').notRequired(),
 });
 
 export default function AlunnoForm({ onSuccess }) {
@@ -104,6 +105,16 @@ export default function AlunnoForm({ onSuccess }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-slate-200">Data di iscrizione</label>
+          <input
+            className="w-full rounded-3xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            type="date"
+            {...register('dataIscrizione')}
+          />
+          {errors.dataIscrizione && <p className="text-xs text-rose-400">{errors.dataIscrizione.message}</p>}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-slate-200">Luogo di nascita</label>
           <input

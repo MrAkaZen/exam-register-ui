@@ -9,7 +9,7 @@ export const alunnoApi = {
   getById: (matricola) => api.get(`/alunni/${matricola}`),
 
   // POST nuovo alunno
-  save: (alunnoDTO) => api.post('/alunni', alunnoDTO),
+  save: (alunnoDTO) => api.post('/alunni/add', alunnoDTO),
 
   // PUT aggiorna voto
   updateVoto: (matricola, codiceMateria, voto, dataSostenimento) =>
