@@ -26,6 +26,18 @@ export default function AlunniPage() {
     return () => { mounted = false; };
   }, []);
 
+  const handleStudentClick = async (matricola) => {
+  try {
+    const response = await axios.get(
+      `/alunno/alunnobyId/${matricola}`
+    );
+    const alunno = response.data;
+    console.log('Alunno recuperato:', alunno);
+  } catch (error) {
+    console.error("Errore recupero alunno:", error);
+  }
+};
+
   const handleAdd = (newAlunno) => {
     setAlunni((s) => [newAlunno, ...s]);
     setShowForm(false);

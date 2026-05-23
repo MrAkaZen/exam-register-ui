@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Activity, BarChart3, Users, ArrowRight, TrendingUp } from 'lucide-react';
 import Header from '../components/ui/Header';
 import StatsCard from '../components/ui/StatsCard';
@@ -24,6 +25,8 @@ export default function Dashboard() {
     load();
     return () => { mounted = false; };
   }, []);
+
+  const navigate = useNavigate();
 
   const recent = alunni.slice(0, 5);
 
@@ -87,7 +90,7 @@ export default function Dashboard() {
                 <p className="er-empty">Nessun alunno disponibile.</p>
               )}
               {!loading && recent.map((a) => (
-                <StudentCard key={a.matricola ?? a.email} alunno={a} />
+                <StudentCard key={a.matricola ?? a.email} alunno={a} onClick={() => navigate(`/alunni/alunno?matricola=${a.matricola}`)}/>
               ))}
             </div>
           </section>

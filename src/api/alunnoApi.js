@@ -6,10 +6,7 @@ export const alunnoApi = {
   getAll: () => api.get('/alunni'),
 
   // GET alunno per matricola
-  getById: (matricola) => api.get(`/alunni/${matricola}`),
-
-
-  getAlunnoById: (matricola) => api.get(`/alunni/alunnoById/${matricola}`),
+  getAlunnoById: (matricola) => api.get(`/alunni/alunno`, { params: { matricola } }),
 
   // POST nuovo alunno
   save: (alunnoDTO) => api.post('/alunni/add', alunnoDTO),
