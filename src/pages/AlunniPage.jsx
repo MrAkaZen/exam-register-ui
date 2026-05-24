@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Filter, ChevronDown } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import Header from '../components/ui/Header';
 import AlunnoForm from '../components/alunno/alunnoForm';
 import { alunnoApi } from '../api/alunnoApi';
@@ -51,6 +52,8 @@ export default function AlunniPage() {
       (a.email || '').toLowerCase().includes(q)
     );
   });
+
+  const navigate = useNavigate();
 
   return (
     <div className="er-app">
@@ -113,6 +116,7 @@ export default function AlunniPage() {
                   <th>Anno</th>
                   <th>Città</th>
                   <th>Stato</th>
+                  <th>Dettagli</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,6 +150,11 @@ export default function AlunniPage() {
                     <td className="er-table-muted">{a.citta || '—'}</td>
                     <td>
                       <span className="er-status er-status--active">Attivo</span>
+                    </td>
+                    <td> 
+                        <button className="er-btn er-btn--ghost er-btn--icon" 
+                        onClick={(e) => { e.stopPropagation(); navigate(`/alunni/alunno?matricola=${a.matricola}`); }}>
+                        </button> 
                     </td>
                   </tr>
                 ))}

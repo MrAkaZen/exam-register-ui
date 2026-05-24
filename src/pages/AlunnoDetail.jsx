@@ -13,21 +13,47 @@ export default function AlunnoDetail() {
 
     const [alunno, setAlunno] = useState(null);
 
-    useEffect(() => {
+    const [showAddMateria, setShowAddMateria] = useState(false);
+    const [materiaName, setMateriaName] = useState('');
+    const [adding, setAdding] = useState(false);
+    const [addMessage, setAddMessage] = useState(null);
+
+    const fetchAlunno = async () => {
         if (!matricola) return;
+        try {
+            const res = await alunnoApi.getAlunnoById(matricola);
+            setAlunno(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
-        const fetch = async () => {
-            try {
-                const res = await alunnoApi.getAlunnoById(matricola);
-                setAlunno(res.data);
-            } catch (e) {
-                console.error(e);
-            }
-        };
-
-        fetch();
-
+    useEffect(() => {
+        fetchAlunno();
     }, [matricola]);
+
+    const handleAddMateria = async (e) => {
+        e.preventDefault();
+        setAddMessage(null);
+        const name = (materiaName || '').trim();
+        if (!name) {
+            setAddMessage('Inserisci il nome della materia');
+            return;
+        }
+        setAdding(true);
+        try {
+            await alunnoApi.addMateria(matricola, name);
+            setAddMessage('Materia aggiunta con successo');
+            setMateriaName('');
+            setShowAddMateria(false);
+            await fetchAlunno();
+        } catch (err) {
+            console.error(err);
+            setAddMessage("Errore durante l'aggiunta della materia");
+        } finally {
+            setAdding(false);
+        }
+    };
 
     return (
         <div className="er-app">
@@ -53,12 +79,29 @@ export default function AlunnoDetail() {
                             </div>
                             <div className="er-card-actions">
                                 <button className="er-btn er-btn--ghost" onClick={() => navigate('/alunni')}>Indietro</button>
+                                <button className="er-btn er-btn--primary" onClick={() => { setShowAddMateria(s => !s); setAddMessage(null); }}>{showAddMateria ? 'Chiudi' : 'Aggiungi materia'}</button>
                             </div>
                         </div>
 
                         <div className="er-card-body">
                             {!matricola && <p className="er-empty">Matricola non specificata nella query.</p>}
                             {!alunno && matricola && <p className="er-empty">Caricamento...</p>}
+
+                            {showAddMateria && (
+                                <form className="er-form" onSubmit={handleAddMateria} style={{ marginBottom: '1rem' }}>
+                                    <div className="er-form-row">
+                                        <input
+                                            className="er-input"
+                                            placeholder="Nome materia"
+                                            value={materiaName}
+                                            onChange={(e) => setMateriaName(e.target.value)}
+                                        />
+                                        <button className="er-btn er-btn--primary" type="submit" disabled={adding}>{adding ? 'Aggiungendo...' : 'Aggiungi'}</button>
+                                        <button type="button" className="er-btn er-btn--ghost" onClick={() => { setShowAddMateria(false); setMateriaName(''); setAddMessage(null); }}>Annulla</button>
+                                    </div>
+                                    {addMessage && <p className="er-note">{addMessage}</p>}
+                                </form>
+                            )}
 
                             {alunno && (
                                 <div className="er-grid er-grid--2cols">
