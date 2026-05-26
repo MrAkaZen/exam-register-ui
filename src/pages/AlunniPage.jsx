@@ -10,6 +10,20 @@ export default function AlunniPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [filterData, setFilterData] = useState({
+    nomeCompleto: '',
+    email: '',
+    telefono: '',
+    codiceFiscale: '',
+    indirizzo: '',
+    cap: '',
+    citta: '',
+    annoCorso: '',
+    dataIscrizione: '',
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -44,14 +58,46 @@ export default function AlunniPage() {
     setShowForm(false);
   };
 
-  const filtered = alunni.filter((a) => {
-    const q = search.toLowerCase();
-    return (
-      !q ||
-      `${a.nome} ${a.cognome}`.toLowerCase().includes(q) ||
-      (a.email || '').toLowerCase().includes(q)
-    );
-  });
+  const cleanEmptyFields = (data) => {
+    const cleaned = { ...data };
+    Object.keys(cleaned).forEach((key) => {
+      if (cleaned[key] === '' || cleaned[key] === null || cleaned[key] === undefined) {
+        delete cleaned[key];
+      }
+    });
+    return cleaned;
+  };
+
+  const handleApplyFilters = async () => {
+    setLoading(true);
+    try {
+      const cleanedFilters = cleanEmptyFields(filterData);
+      const resp = await alunnoApi.getFilteredWithBody(cleanedFilters, page, size);
+      if (resp.data) {
+        setAlunni(Array.isArray(resp.data) ? resp.data : []);
+      }
+      setShowFilters(false);
+    } catch (e) {
+      console.error('Errore filtri:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setFilterData({
+      nomeCompleto: '',
+      email: '',
+      telefono: '',
+      codiceFiscale: '',
+      indirizzo: '',
+      cap: '',
+      citta: '',
+      annoCorso: '',
+      dataIscrizione: '',
+    });
+    setPage(0);
+  };
 
   const navigate = useNavigate();
 
@@ -97,15 +143,117 @@ export default function AlunniPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button className="er-btn er-btn--ghost">
+            <button 
+              className="er-btn er-btn--ghost"
+              onClick={() => setShowFilters(!showFilters)}
+            >
               <Filter size={14} strokeWidth={1.8} />
               Filtri
               <ChevronDown size={12} strokeWidth={2} />
             </button>
             <span className="er-table-count">
-              {loading ? '…' : `${filtered.length} studenti`}
+              {loading ? '…' : `${alunni.length} studenti`}
             </span>
           </div>
+
+          {showFilters && (
+            <div className="er-filters-panel er-fade-in" style={{ padding: '16px', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--surface-2)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+                <input
+                  type="text"
+                  placeholder="Nome completo"
+                  value={filterData.nomeCompleto}
+                  onChange={(e) => setFilterData({ ...filterData, nomeCompleto: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={filterData.email}
+                  onChange={(e) => setFilterData({ ...filterData, email: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <input
+                  type="tel"
+                  placeholder="Telefono"
+                  value={filterData.telefono}
+                  onChange={(e) => setFilterData({ ...filterData, telefono: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Codice Fiscale"
+                  value={filterData.codiceFiscale}
+                  onChange={(e) => setFilterData({ ...filterData, codiceFiscale: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Indirizzo"
+                  value={filterData.indirizzo}
+                  onChange={(e) => setFilterData({ ...filterData, indirizzo: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="CAP"
+                  value={filterData.cap}
+                  onChange={(e) => setFilterData({ ...filterData, cap: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Città"
+                  value={filterData.citta}
+                  onChange={(e) => setFilterData({ ...filterData, citta: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+                <select
+                  value={filterData.annoCorso}
+                  onChange={(e) => setFilterData({ ...filterData, annoCorso: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                >
+                  <option value="">Anno Corso</option>
+                  <option value="PRIMO">PRIMO</option>
+                  <option value="SECONDO">SECONDO</option>
+                  <option value="TERZO">TERZO</option>
+                </select>
+                <input
+                  type="date"
+                  value={filterData.dataIscrizione}
+                  onChange={(e) => setFilterData({ ...filterData, dataIscrizione: e.target.value })}
+                  className="er-input"
+                  style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '14px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  className="er-btn er-btn--ghost"
+                  onClick={() => {
+                    handleResetFilters();
+                    setShowFilters(false);
+                  }}
+                >
+                  Cancella
+                </button>
+                <button
+                  className="er-btn er-btn--primary"
+                  onClick={handleApplyFilters}
+                  disabled={loading}
+                >
+                  Applica filtri
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="er-table-wrap">
             <table className="er-table">
@@ -122,17 +270,17 @@ export default function AlunniPage() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={5} className="er-table-empty">Caricamento...</td>
+                    <td colSpan={6} className="er-table-empty">Caricamento...</td>
                   </tr>
                 )}
-                {!loading && filtered.length === 0 && (
+                {!loading && alunni.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="er-table-empty">
+                    <td colSpan={6} className="er-table-empty">
                       {search ? 'Nessun risultato.' : 'Nessun alunno disponibile.'}
                     </td>
                   </tr>
                 )}
-                {!loading && filtered.map((a) => (
+                {!loading && alunni.map((a) => (
                   <tr key={a.matricola ?? a.email} className="er-table-row">
                     <td>
                       <div className="er-table-student">

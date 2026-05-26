@@ -19,4 +19,8 @@ export const alunnoApi = {
 
   // POST iscrivi alunno a materia
   addMateria: (matricola, nomeMateria) => api.post(`/alunni/${matricola}/materie/${nomeMateria}`),
+
+  // POST alunni filtrati con body
+  getFilteredWithBody: (alunnoFiltered, page = 0, size = 10) =>
+    api.post('/alunni/filtered', alunnoFiltered, { params: { page, size } }),
 };

@@ -24,9 +24,20 @@ export default function AlunnoForm({ onSuccess }) {
     resolver: yupResolver(schema),
   });
 
+  const cleanEmptyFields = (data) => {
+    const cleaned = { ...data };
+    Object.keys(cleaned).forEach((key) => {
+      if (cleaned[key] === '' || cleaned[key] === null || cleaned[key] === undefined) {
+        delete cleaned[key];
+      }
+    });
+    return cleaned;
+  };
+
   const onSubmit = async (data) => {
     try {
-      const response = await alunnoApi.save(data);
+      const cleanedData = cleanEmptyFields(data);
+      const response = await alunnoApi.save(cleanedData);
       console.log('Alunno creato:', response.data);
       onSuccess?.(response.data);
     } catch (error) {
