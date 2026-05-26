@@ -46,34 +46,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="er-stats-grid">
-          <StatsCard
-            icon={Users}
-            label="Studenti totali"
-            value={loading ? '—' : alunni.length}
-            hint="Profili attivi nel sistema"
-            trend={{ dir: 'up', label: '+3 questo mese' }}
-          />
-          <StatsCard
-            icon={Activity}
-            label="Nuovi inserimenti"
-            value={loading ? '—' : recent.length}
-            hint="Ultimi 5 profili registrati"
-          />
-          <StatsCard
-            icon={BarChart3}
-            label="Materie attive"
-            value="—"
-            hint="Da collegare al backend"
-          />
-          <StatsCard
-            icon={TrendingUp}
-            label="Media voti"
-            value="—"
-            hint="Calcolo in attesa"
-          />
-        </div>
-
         <div className="er-content-grid">
           <section className="er-card er-card--main">
             <div className="er-card-header">

@@ -3,123 +3,292 @@ import { Plus, Search, Filter, ChevronDown } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import Header from '../components/ui/Header';
 import AlunnoForm from '../components/alunno/alunnoForm';
+import StatsCard from '../components/ui/StatsCard';
 import { alunnoApi } from '../api/alunnoApi';
+import {
+  Users,
+  UserPlus,
+  CalendarDays,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  UserX,
+  Wifi
+} from "lucide-react";
 
 export default function AlunniPage() {
+
+  // =========================
+  // STATE
+  // =========================
   const [alunni, setAlunni] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+
+  const [loadingAlunni, setLoadingAlunni] = useState(true);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  const [error, setError] = useState(null);
+
   const [showForm, setShowForm] = useState(false);
-  const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [search, setSearch] = useState("");
+
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [filtersApplied, setFiltersApplied] = useState(false);
+
   const [filterData, setFilterData] = useState({
-    nomeCompleto: '',
-    email: '',
-    telefono: '',
-    codiceFiscale: '',
-    indirizzo: '',
-    cap: '',
-    citta: '',
-    annoCorso: '',
-    dataIscrizione: '',
+    nomeCompleto: "",
+    email: "",
+    telefono: "",
+    codiceFiscale: "",
+    indirizzo: "",
+    cap: "",
+    citta: "",
+    annoCorso: "",
+    dataIscrizione: "",
   });
+
+  const statsConfig = (stats) => [
+    {
+      label: "Nuovi oggi",
+      value: stats.newProfilesToday,
+      icon: UserPlus,
+    },
+    {
+      label: "Ultimi 7 giorni",
+      value: stats.newProfilesLast7Days,
+      icon: CalendarDays,
+    },
+    {
+      label: "Mese corrente",
+      value: stats.currentMonthProfiles,
+      icon: TrendingUp,
+    },
+    {
+      label: "Mese precedente",
+      value: stats.previousMonthProfiles,
+      icon: TrendingDown,
+    },
+    {
+      label: "Crescita",
+      value: `${stats.profileGrowth ?? 0}`,
+      icon: Activity,
+    },
+    {
+      label: "Attivi 30gg",
+      value: stats.activeUsers30Days,
+      icon: Users,
+    },
+    {
+      label: "Inattivi 90gg",
+      value: stats.inactiveUsers90Days,
+      icon: UserX,
+    },
+    {
+      label: "Online",
+      value: stats.onlineUsers,
+      icon: Wifi,
+    },
+  ];
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
-    async function load() {
+
+    async function loadAlunni() {
       try {
+        setLoadingAlunni(true);
+
         const resp = await alunnoApi.getAll();
-        if (mounted) setAlunni(Array.isArray(resp.data) ? resp.data : []);
+
+        if (mounted) {
+          setAlunni(Array.isArray(resp.data) ? resp.data : []);
+        }
+
       } catch (e) {
         console.error(e);
+        if (mounted) setError("Errore caricamento alunni");
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoadingAlunni(false);
       }
     }
-    load();
-    return () => { mounted = false; };
+
+    loadAlunni();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const handleStudentClick = async (matricola) => {
-  try {
-    const response = await axios.get(
-      `/alunno/alunnobyId/${matricola}`
-    );
-    const alunno = response.data;
-    console.log('Alunno recuperato:', alunno);
-  } catch (error) {
-    console.error("Errore recupero alunno:", error);
-  }
-};
+  useEffect(() => {
+    let mounted = true;
 
-  const handleAdd = (newAlunno) => {
-    setAlunni((s) => [newAlunno, ...s]);
-    setShowForm(false);
-  };
+    async function loadStats() {
+      try {
+        setLoadingStats(true);
+
+        const resp = await alunnoApi.getAlunniStats();
+
+        if (mounted) {
+          setStats(resp.data);
+        }
+
+      } catch (e) {
+        console.error(e);
+        if (mounted) setError("Errore caricamento statistiche");
+      } finally {
+        if (mounted) setLoadingStats(false);
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loadingAlunni || loadingStats) {
+    return (
+      <div className="p-6 text-gray-600">
+        Caricamento dashboard...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-red-600">
+        {error}
+      </div>
+    );
+  }
 
   const cleanEmptyFields = (data) => {
     const cleaned = { ...data };
     Object.keys(cleaned).forEach((key) => {
-      if (cleaned[key] === '' || cleaned[key] === null || cleaned[key] === undefined) {
-        delete cleaned[key];
-      }
+      if (!cleaned[key]) delete cleaned[key];
     });
     return cleaned;
   };
 
   const handleApplyFilters = async () => {
-    setLoading(true);
     try {
-      const cleanedFilters = cleanEmptyFields(filterData);
-      const resp = await alunnoApi.getFilteredWithBody(cleanedFilters, page, size);
-      if (resp.data) {
-        setAlunni(Array.isArray(resp.data) ? resp.data : []);
-      }
+      setLoadingAlunni(true);
+
+      const cleaned = cleanEmptyFields(filterData);
+      const resp = await alunnoApi.getFilteredWithBody(cleaned, page, size);
+
+      setAlunni(Array.isArray(resp.data) ? resp.data : []);
       setFiltersApplied(true);
       setShowFilters(false);
+
     } catch (e) {
-      console.error('Errore filtri:', e);
+      console.error(e);
+      setError("Errore filtri");
     } finally {
-      setLoading(false);
+      setLoadingAlunni(false);
     }
   };
 
   const handleResetFilters = async () => {
-    setLoading(true);
     try {
-      const resp = await alunnoApi.getAll();
-      if (resp.data) {
-        setAlunni(Array.isArray(resp.data) ? resp.data : []);
-      }
-      setFilterData({
-        nomeCompleto: '',
-        email: '',
-        telefono: '',
-        codiceFiscale: '',
-        indirizzo: '',
-        cap: '',
-        citta: '',
-        annoCorso: '',
-        dataIscrizione: '',
-      });
-      setPage(0);
+      setLoadingAlunni(true);
+
+      const resp = await alunnoApi.getAll(0, 30);
+
+      setAlunni(Array.isArray(resp.data) ? resp.data : []);
       setFiltersApplied(false);
-      setShowFilters(false);
+      setFilterData({
+        nomeCompleto: "",
+        email: "",
+        telefono: "",
+        codiceFiscale: "",
+        indirizzo: "",
+        cap: "",
+        citta: "",
+        annoCorso: "",
+        dataIscrizione: "",
+      });
+
     } catch (e) {
-      console.error('Errore reset filtri:', e);
+      console.error(e);
     } finally {
-      setLoading(false);
+      setLoadingAlunni(false);
     }
   };
 
-  const navigate = useNavigate();
+  const handleStudentClick = async (matricola) => {
+    try {
+      const response = await axios.get(
+        `/alunno/alunnobyId/${matricola}`
+      );
+      console.log("Alunno:", response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAdd = async (newAlunno) => {
+    try {
+      const resp = await alunnoApi.createAlunno(newAlunno);
+
+      const created = resp.data;
+
+      setAlunni((prev) => [created, ...prev]);
+      setShowForm(false);
+
+    } catch (error) {
+      console.error("Errore creazione studente:", error);
+      setError("Errore durante la creazione dello studente");
+    }
+  };
+
+  const formatValue = (value) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return { text: "—", color: "gray" };
+    }
+
+    const num = Number(value);
+
+    if (num > 0) {
+      return { text: `+${num}`, color: "green" };
+    }
+
+    if (num < 0) {
+      return { text: `${num}`, color: "red" };
+    }
+
+    return { text: "0", color: "gray" };
+  };
+
+  const formatTrend = (value) => {
+    const num = Number(value);
+
+    if (isNaN(num) || num === 0) {
+      return {
+        dir: "flat",
+        label: "0 questo mese",
+      };
+    }
+
+    if (num > 0) {
+      return {
+        dir: "up",
+        label: `+${num} questo mese`,
+      };
+    }
+
+    return {
+      dir: "down",
+      label: `${num} questo mese`,
+    };
+  };
 
   return (
     <div className="er-app">
       <Header />
-
       <main className="er-main">
         <div className="er-page-header">
           <div>
@@ -133,6 +302,30 @@ export default function AlunniPage() {
             <Plus size={16} strokeWidth={2} />
             {showForm ? 'Annulla' : 'Nuovo studente'}
           </button>
+        </div>
+
+        <div className="er-stats-grid">
+          {stats &&
+            Object.keys(stats).length > 0 &&
+            statsConfig(stats).map((s, idx) => {
+              const formatted = formatValue(s.value);
+              const trend = formatTrend(s.value);
+
+              return (
+                <StatsCard
+                  key={idx}
+                  icon={s.icon}
+                  label={s.label}
+                  value={
+                    <span style={{ color: formatted.color }}>
+                      {formatted.text}
+                    </span>
+                  }
+                  hint=""
+                  trend={trend}
+                />
+              );
+            })}
         </div>
 
         {showForm && (
@@ -158,7 +351,7 @@ export default function AlunniPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button 
+            <button
               className="er-btn er-btn--ghost"
               onClick={() => setShowFilters(!showFilters)}
             >
@@ -167,7 +360,7 @@ export default function AlunniPage() {
               <ChevronDown size={12} strokeWidth={2} />
             </button>
             {filtersApplied && (
-              <button 
+              <button
                 className="er-btn er-btn--ghost"
                 onClick={handleResetFilters}
                 style={{ color: 'var(--blue)' }}
@@ -176,7 +369,7 @@ export default function AlunniPage() {
               </button>
             )}
             <span className="er-table-count">
-              {loading ? '…' : `${alunni.length} studenti`}
+              {loadingAlunni ? '…' : `${alunni.length} studenti`}
             </span>
           </div>
 
@@ -289,19 +482,19 @@ export default function AlunniPage() {
                 </tr>
               </thead>
               <tbody>
-                {loading && (
+                {loadingAlunni && (
                   <tr>
                     <td colSpan={6} className="er-table-empty">Caricamento...</td>
                   </tr>
                 )}
-                {!loading && alunni.length === 0 && (
+                {!loadingAlunni && alunni.length === 0 && (
                   <tr>
                     <td colSpan={6} className="er-table-empty">
                       {search ? 'Nessun risultato.' : 'Nessun alunno disponibile.'}
                     </td>
                   </tr>
                 )}
-                {!loading && alunni.map((a) => (
+                {!loadingAlunni && alunni.map((a) => (
                   <tr key={a.matricola ?? a.email} className="er-table-row">
                     <td>
                       <div className="er-table-student">
@@ -320,10 +513,10 @@ export default function AlunniPage() {
                     <td>
                       <span className="er-status er-status--active">Attivo</span>
                     </td>
-                    <td> 
-                        <button className="er-btn er-btn--ghost er-btn--icon" 
+                    <td>
+                      <button className="er-btn er-btn--ghost er-btn--icon"
                         onClick={(e) => { e.stopPropagation(); navigate(`/alunni/alunno?matricola=${a.matricola}`); }}>
-                        </button> 
+                      </button>
                     </td>
                   </tr>
                 ))}

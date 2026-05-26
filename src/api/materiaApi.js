@@ -14,4 +14,6 @@ export const materiaApi = {
   // POST materie filtrate con body
   getFilteredWithBody: (materiaFiltered, page = 0, size = 10) =>
   api.post('/materie/filtered', materiaFiltered, { params: { page, size } }),
+
+  
 };

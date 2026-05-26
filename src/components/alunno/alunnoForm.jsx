@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -15,7 +16,7 @@ const schema = yup.object({
   indirizzo: yup.string().notRequired(),
   cap: yup.string().matches(/^\d{5}$/, 'Il CAP deve essere di 5 cifre').notRequired(),
   citta: yup.string().notRequired(),
-  annoCorso: yup.number().integer().min(1).max(10).notRequired(),
+  annoCorso: yup.string().oneOf(['PRIMO', 'SECONDO', 'TERZO'], 'Selezionare un anno valido').notRequired(),
   dataIscrizione: yup.date().max(new Date(), 'La data di iscrizione deve essere nel passato').notRequired(),
 });
 
@@ -23,6 +24,8 @@ export default function AlunnoForm({ onSuccess }) {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
   });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const cleanEmptyFields = (data) => {
     const cleaned = { ...data };
@@ -37,11 +40,17 @@ export default function AlunnoForm({ onSuccess }) {
   const onSubmit = async (data) => {
     try {
       const cleanedData = cleanEmptyFields(data);
-      const response = await alunnoApi.save(cleanedData);
+      const response = await alunnoApi.createAlunno(cleanedData);
       console.log('Alunno creato:', response.data);
+      // reset any previous error
+      setErrorMessage('');
+      setShowErrorModal(false);
       onSuccess?.(response.data);
     } catch (error) {
-      console.error('Errore:', error.response?.data?.message);
+      const msg = error?.response?.data?.message || error?.message || 'Errore sconosciuto';
+      console.error('Errore:', msg);
+      setErrorMessage(msg);
+      setShowErrorModal(true);
     }
   };
 
@@ -182,24 +191,45 @@ export default function AlunnoForm({ onSuccess }) {
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-slate-200">Anno corso</label>
-          <input
-            className="w-full rounded-3xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            placeholder="Anno corso"
-            type="number"
+          <select
+            className="w-full rounded-3xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 0.75rem center',
+              paddingRight: '2.5rem',
+            }}
             {...register('annoCorso')}
-          />
+          >
+            <option value="">Selezionare anno corso</option>
+            <option value="PRIMO">PRIMO</option>
+            <option value="SECONDO">SECONDO</option>
+            <option value="TERZO">TERZO</option>
+          </select>
           {errors.annoCorso && <p className="text-xs text-rose-400">{errors.annoCorso.message}</p>}
         </div>
 
         <div className="flex items-end">
           <button
             type="submit"
-            className="w-full rounded-3xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-2xl shadow-indigo-500/20 transition hover:scale-[1.01]"
+            className="w-full rounded-3xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-2xl shadow-indigo-500/20 transition hover:scale-[1.01] mt-6"
           >
             Aggiungi Alunno
           </button>
         </div>
       </div>
+      {showErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowErrorModal(false)} />
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md z-10">
+            <h3 className="text-lg font-semibold mb-2">Errore</h3>
+            <p className="text-sm text-slate-700 dark:text-slate-300 mb-4">{errorMessage}</p>
+            <div className="text-right">
+              <button type="button" className="er-btn er-btn--primary" onClick={() => setShowErrorModal(false)}>Chiudi</button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
