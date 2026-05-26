@@ -13,6 +13,7 @@ export default function AlunniPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
+  const [filtersApplied, setFiltersApplied] = useState(false);
   const [filterData, setFilterData] = useState({
     nomeCompleto: '',
     email: '',
@@ -76,6 +77,7 @@ export default function AlunniPage() {
       if (resp.data) {
         setAlunni(Array.isArray(resp.data) ? resp.data : []);
       }
+      setFiltersApplied(true);
       setShowFilters(false);
     } catch (e) {
       console.error('Errore filtri:', e);
@@ -84,19 +86,32 @@ export default function AlunniPage() {
     }
   };
 
-  const handleResetFilters = () => {
-    setFilterData({
-      nomeCompleto: '',
-      email: '',
-      telefono: '',
-      codiceFiscale: '',
-      indirizzo: '',
-      cap: '',
-      citta: '',
-      annoCorso: '',
-      dataIscrizione: '',
-    });
-    setPage(0);
+  const handleResetFilters = async () => {
+    setLoading(true);
+    try {
+      const resp = await alunnoApi.getAll();
+      if (resp.data) {
+        setAlunni(Array.isArray(resp.data) ? resp.data : []);
+      }
+      setFilterData({
+        nomeCompleto: '',
+        email: '',
+        telefono: '',
+        codiceFiscale: '',
+        indirizzo: '',
+        cap: '',
+        citta: '',
+        annoCorso: '',
+        dataIscrizione: '',
+      });
+      setPage(0);
+      setFiltersApplied(false);
+      setShowFilters(false);
+    } catch (e) {
+      console.error('Errore reset filtri:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const navigate = useNavigate();
@@ -151,6 +166,15 @@ export default function AlunniPage() {
               Filtri
               <ChevronDown size={12} strokeWidth={2} />
             </button>
+            {filtersApplied && (
+              <button 
+                className="er-btn er-btn--ghost"
+                onClick={handleResetFilters}
+                style={{ color: 'var(--blue)' }}
+              >
+                ✕ Cancella filtri
+              </button>
+            )}
             <span className="er-table-count">
               {loading ? '…' : `${alunni.length} studenti`}
             </span>
@@ -237,12 +261,9 @@ export default function AlunniPage() {
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                 <button
                   className="er-btn er-btn--ghost"
-                  onClick={() => {
-                    handleResetFilters();
-                    setShowFilters(false);
-                  }}
+                  onClick={handleResetFilters}
                 >
-                  Cancella
+                  ✕ Ripristina
                 </button>
                 <button
                   className="er-btn er-btn--primary"
