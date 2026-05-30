@@ -15,7 +15,7 @@ export default function AlunniPage() {
   useEffect(() => {
     let mounted = true;
     alunnoApi.getAll()
-      .then((r) => { if (mounted) setAlunni(Array.isArray(r.data) ? r.data : []); })
+      .then((r) => { if (mounted) setAlunni(Array.isArray(r.data.content) ? r.data.content : []); })
       .catch(console.error)
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
@@ -120,7 +120,7 @@ export default function AlunniPage() {
                     key={a.matricola ?? a.email}
                     className="er-table-row"
                     style={{ cursor: 'pointer' }}
-                    onClick={() => a.matricola && navigate(`/alunni/${a.matricola}`)}
+                    onClick={() => a.matricola && navigate(`/alunni/alunno?matricola=${a.matricola}`)}
                   >
                     <td>
                       <div className="er-table-student">
@@ -140,7 +140,7 @@ export default function AlunniPage() {
                     <td>
                       <button
                         className="er-btn er-btn--ghost er-btn--sm"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/alunni/${a.matricola}`); }}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/alunni/alunno?matricola=${a.matricola}`); }}
                         title="Vai al profilo"
                       >
                         <ArrowRight size={13} strokeWidth={2} />

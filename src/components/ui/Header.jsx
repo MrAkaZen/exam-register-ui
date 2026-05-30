@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Search, Bell, LayoutDashboard, Users, BookOpen, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
+
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/alunni',    label: 'Alunni',     icon: Users },

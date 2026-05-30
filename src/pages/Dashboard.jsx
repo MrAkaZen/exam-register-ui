@@ -15,7 +15,7 @@ export default function Dashboard() {
     async function load() {
       try {
         const resp = await alunnoApi.getAll();
-        if (mounted) setAlunni(Array.isArray(resp.data) ? resp.data : []);
+        if (mounted) setAlunni(Array.isArray(resp.data.content) ? resp.data.content : []);
       } catch (e) {
         console.error(e);
       } finally {

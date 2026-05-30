@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { Activity, BarChart3, Users, ArrowRight, TrendingUp } from 'lucide-react';
 import Header from '../components/ui/Header';
 import { alunnoApi } from "../api/alunnoApi";
-
 import { useNavigate } from 'react-router-dom';
 
 export default function AlunnoDetail() {
@@ -21,7 +20,7 @@ export default function AlunnoDetail() {
     const fetchAlunno = async () => {
         if (!matricola) return;
         try {
-            const res = await alunnoApi.getAlunnoById(matricola);
+            const res = await alunnoApi.getAlunnoByMatricola(matricola);
             setAlunno(res.data);
         } catch (e) {
             console.error(e);
