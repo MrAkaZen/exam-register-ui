@@ -18,24 +18,19 @@ import {
 
 export default function AlunniPage() {
 
-  // =========================
-  // STATE
-  // =========================
   const [alunni, setAlunni] = useState([]);
   const [stats, setStats] = useState(null);
-
   const [loadingAlunni, setLoadingAlunni] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
-
   const [error, setError] = useState(null);
-
   const [showForm, setShowForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
-
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [filtersApplied, setFiltersApplied] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const [filterData, setFilterData] = useState({
     nomeCompleto: "",
@@ -91,35 +86,35 @@ export default function AlunniPage() {
       icon: Wifi,
     },
   ];
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let mounted = true;
+  const loadAlunni = async (
+    currentPage = page,
+    currentSize = size
+  ) => {
+    try {
+      setLoadingAlunni(true);
 
-    async function loadAlunni() {
-      try {
-        setLoadingAlunni(true);
+      const resp =
+        await alunnoApi.getMustRecently(
+          currentPage,
+          currentSize
+        );
 
-        const resp = await alunnoApi.getAll();
+      setAlunni(resp.data.content ?? []);
 
-        if (mounted) {
-          setAlunni(Array.isArray(resp.data) ? resp.data : []);
-        }
+      setPage(resp.data.number);
+      setSize(resp.data.size);
+      setTotalPages(resp.data.totalPages);
+      setTotalElements(resp.data.totalElements);
 
-      } catch (e) {
-        console.error(e);
-        if (mounted) setError("Errore caricamento alunni");
-      } finally {
-        if (mounted) setLoadingAlunni(false);
-      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAlunni(false);
     }
-
-    loadAlunni();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -149,18 +144,22 @@ export default function AlunniPage() {
     };
   }, []);
 
-  if (loadingAlunni || loadingStats) {
-    return (
-      <div className="p-6 text-gray-600">
-        Caricamento dashboard...
-      </div>
-    );
-  }
+  useEffect(() => {
+    loadAlunni(page, size);
+  }, [page, size]);
 
   if (error) {
     return (
       <div className="p-6 text-red-600">
         {error}
+      </div>
+    );
+  }
+
+  if (loadingAlunni || loadingStats) {
+    return (
+      <div className="p-6 text-gray-600">
+        Caricamento dashboard...
       </div>
     );
   }
@@ -522,6 +521,99 @@ export default function AlunniPage() {
                 ))}
               </tbody>
             </table>
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white">
+
+              {/* LEFT */}
+              <div className="flex items-center gap-3">
+
+                <span className="text-sm text-gray-500">
+                  Totale studenti: {totalElements}
+                </span>
+
+                <select
+                  value={size}
+                  onChange={(e) => {
+
+                    const newSize =
+                      Number(e.target.value);
+
+                    setPage(0);
+                    setSize(newSize);
+
+                  }}
+                  className="
+        px-3
+        py-2
+        border
+        rounded-lg
+        text-sm
+        bg-white
+        focus:outline-none
+        focus:ring-2
+        focus:ring-blue-500
+      "
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
+                </select>
+
+              </div>
+
+              {/* RIGHT */}
+              <div className="flex items-center gap-4">
+
+                <button
+                  disabled={page === 0}
+                  onClick={() => setPage(p => p - 1)}
+                  className="
+        px-4
+        py-2
+        border
+        rounded-lg
+        text-sm
+        hover:bg-gray-100
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+      "
+                >
+                  ← Prec.
+                </button>
+
+                <span className="text-sm font-medium text-gray-700">
+
+                  Pagina {page + 1}
+                  {" / "}
+                  {Math.max(totalPages, 1)}
+
+                </span>
+
+                <button
+                  disabled={
+                    page >= totalPages - 1
+                  }
+                  onClick={() =>
+                    setPage(p => p + 1)
+                  }
+                  className="
+        px-4
+        py-2
+        border
+        rounded-lg
+        text-sm
+        hover:bg-gray-100
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+      "
+                >
+                  Succ. →
+                </button>
+
+              </div>
+
+            </div>
           </div>
         </div>
       </main>
