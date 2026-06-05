@@ -9,7 +9,7 @@ export const alunnoApi = {
   getMustRecently: (page = 0, size = 5) => api.get('/alunni/mustRecently', { params: { page, size } }),
 
   // GET alunno per matricola
-  getAlunnoByMatricola: (matricola) => api.get(`/alunni/alunno`, { params: { matricola } }),
+  getAlunnoByMatricola: (matricola) => api.get('/alunni/alunno', { params: { matricola } }),
 
   // POST nuovo alunno
   createAlunno: (alunnoDTO) => api.post('/alunni/add', alunnoDTO),
