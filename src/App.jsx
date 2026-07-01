@@ -1,21 +1,20 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import HomePage      from './pages/HomePage';
-import Dashboard     from './pages/Dashboard';
+import Dashboard     from './pages/DashboardPage';
 import AlunniPage    from './pages/AlunniPage';
 import MateriaPage   from './pages/MateriaPage';
-import AlunnoDetail from './pages/AlunnoDetail';
+import AlunnoDetails from './components/alunno/alunnoDetails';
 
 export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/"                    element={<HomePage />} />
-          <Route path="/dashboard"           element={<Dashboard />} />
-          <Route path="/alunni"              element={<AlunniPage />} />
-          <Route path="/alunni/alunno"       element={<AlunnoDetail />} />
-          <Route path="/materie"             element={<MateriaPage />} />
+          <Route path="/"                   element={<DashboardPage />} />
+          <Route path="/alunni"             element={<AlunniPage />} />
+          <Route path="/alunni/:matricola"  element={<AlunnoDetails />} />
+          <Route path="/materie"            element={<MateriaPage />} />
+          <Route path="/professori"         element={<ProessoriPage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from 'react-router-dom';
 import { Activity, BarChart3, Users, ArrowRight, TrendingUp } from 'lucide-react';
-import Header from '../components/ui/Header';
-import { alunnoApi } from "../api/alunnoApi";
+import Header from "../ui/Header";
+import alunnoApi from '../../api/alunnoApi';
 import { useNavigate } from 'react-router-dom';
 
-export default function AlunnoDetail() {
+export default function AlunnoDetails() {
     const [searchParams] = useSearchParams();
     const matricola = searchParams.get('matricola');
     const navigate = useNavigate();

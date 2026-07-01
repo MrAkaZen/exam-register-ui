@@ -1,28 +1,69 @@
 import api from './axiosConfig';
 
-export const alunnoApi = {
+const alunniApi = {
+  // Lista paginata
+  getAll: (page = 0, size = 10) =>
+    api.get("/alunni", {
+      params: { page, size },
+    }),
 
-  // GET tutti gli alunni
-  getAll: (page = 0, size = 5) => api.get('/alunni/all', { params: { page, size } }),
+  // Dettaglio alunno
+  getByMatricola: (matricola) =>
+    api.get(`/alunni/${matricola}`),
 
-  // GET alunni più recenti con paginazione
-  getMustRecently: (page = 0, size = 5) => api.get('/alunni/mustRecently', { params: { page, size } }),
+  // Creazione alunno
+  create: (data) =>
+    api.post("/alunni", data),
 
-  // GET alunno per matricola
-  getAlunnoByMatricola: (matricola) => api.get('/alunni/alunno', { params: { matricola } }),
+  // Creazione batch
+  createBatch: (data) =>
+    api.post("/alunni/batch", data),
 
-  // POST nuovo alunno
-  createAlunno: (alunnoDTO) => api.post('/alunni/add', alunnoDTO),
+  // Eliminazione
+  delete: (matricola) =>
+    api.delete(`/alunni/${matricola}`),
 
-  // PUT aggiorna voto
-  updateVotoAlunno: (matricola, codiceMateria, voto, dataSostenimento) => api.put(`/alunni/updateVoto/${matricola}/${codiceMateria}`, null, {params: { voto, dataSostenimento },}),
+  // Ricerca avanzata
+  search: (filter = {}, page = 0, size = 10) =>
+    api.get("/alunni/ricerca/avanzata", {
+      params: {
+        page,
+        size,
+        ...filter,
+      },
+    }),
 
-  // POST iscrivi alunno a materia
-  setMateria: (matricola, nomeMateria) => api.post(`/alunni/${matricola}/materie/${nomeMateria}`),
+  // Alunni recenti
+  getRecent: (page = 0, size = 10) =>
+    api.get("/alunni/recenti", {
+      params: { page, size },
+    }),
 
-  // POST alunni filtrati con body
-  getFilteredWithBody: (alunnoFiltered, page = 0, size = 10) => api.post('/alunni/filtered', alunnoFiltered, { params: { page, size } }),
+  // Dashboard statistiche
+  getDashboardStats: () =>
+    api.get("/alunni/statistiche/dashboard"),
 
-  // GET metriche ultimi 30 giorni
-  getAlunniStats: () => api.get('/alunni/stats'),
+  // Aggiungi materia ad un alunno
+  addMateria: (matricola, codice) =>
+    api.post(`/alunni/${matricola}/materie/${codice}`),
+
+  // Rimuovi materia da un alunno
+  removeMateria: (matricola, codice) =>
+    api.delete(`/alunni/${matricola}/materie/${codice}`),
+
+  // Aggiorna voto esame
+  updateVoto: (
+    matricola,
+    codice,
+    voto,
+    dataSostenimento
+  ) =>
+    api.put(`/alunni/${matricola}/materie/${codice}/voto`, null, {
+      params: {
+        voto,
+        dataSostenimento,
+      },
+    }),
 };
+
+export default alunniApi;

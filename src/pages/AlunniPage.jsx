@@ -1,158 +1,226 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Filter, ChevronDown, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { PlusCircle, Search, Filter, MoreHorizontal, Users } from 'lucide-react';
 import Header from '../components/ui/Header';
+import Sidebar from '../components/ui/Sidebar';
 import AlunnoForm from '../components/alunno/alunnoForm';
-import { alunnoApi } from '../api/alunnoApi';
+import alunnoApi from '../api/alunnoApi';
+import { Info } from "lucide-react";
+
+const gradients = [
+  'linear-gradient(135deg, #2563eb, #0ea5e9)',
+  'linear-gradient(135deg, #7c3aed, #3b82f6)',
+  'linear-gradient(135deg, #0891b2, #2563eb)',
+  'linear-gradient(135deg, #6d28d9, #0ea5e9)',
+  'linear-gradient(135deg, #1d4ed8, #7c3aed)',
+];
 
 export default function AlunniPage() {
-  const [alunni,   setAlunni]   = useState([]);
-  const [loading,  setLoading]  = useState(true);
+  const [alunni, setAlunni] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [search,   setSearch]   = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
-    alunnoApi.getAll()
-      .then((r) => { if (mounted) setAlunni(Array.isArray(r.data.content) ? r.data.content : []); })
-      .catch(console.error)
-      .finally(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
+
+    const loadAlunni = async () => {
+      try {
+        const res = await alunnoApi.getAll(0, 10);
+
+        if (mounted) {
+          setAlunni(res.data.content);
+          console.log('Alunni caricati:', res.data.content);
+        }
+      } catch (err) {
+        console.error("Errore nel recupero degli alunni:", err);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadAlunni();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const handleAdd = (newAlunno) => {
-    setAlunni((s) => [newAlunno, ...s]);
-    setShowForm(false);
-  };
-
-  const filtered = alunni.filter((a) => {
-    const q = search.toLowerCase();
-    return (
-      !q ||
-      `${a.nome} ${a.cognome}`.toLowerCase().includes(q) ||
-      (a.email ?? '').toLowerCase().includes(q) ||
-      (a.matricola ?? '').toLowerCase().includes(q) ||
-      (a.citta ?? '').toLowerCase().includes(q)
-    );
-  });
+  const handleAdd = (a) => { setAlunni(s => [a, ...s]); setShowForm(false); };
 
   return (
-    <div className="er-app">
-      <Header />
+    <div className="er-shell">
+      <Sidebar />
+      <div className="er-main">
+        <Header title="Alunni" subtitle="Gestione anagrafica studenti" />
 
-      <main className="er-main">
-        <div className="er-page-header">
-          <div className="er-page-header-left">
-            <p className="er-eyebrow">Anagrafica</p>
-            <h1 className="er-page-title">Studenti</h1>
-          </div>
-          <div className="er-page-header-actions">
-            <button className="er-btn er-btn--ghost" onClick={() => setShowForm((v) => !v)}>
-              <Plus size={16} strokeWidth={2} />
-              {showForm ? 'Annulla' : 'Nuovo studente'}
-            </button>
-          </div>
-        </div>
+        <div className="er-content">
 
-        {/* Form inserimento */}
-        {showForm && (
-          <div className="er-card er-card--highlight er-fade-in">
-            <div className="er-card-header">
+          {/* Page header bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, gap: 14, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                <Users size={18} />
+              </div>
               <div>
-                <h2 className="er-card-title">Nuovo profilo studente</h2>
-                <p className="er-card-sub">Compila i campi per aggiungere uno studente al sistema</p>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-h)' }}>
+                  {loading ? '…' : alunni.length} studenti registrati
+                </h3>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tutti i profili accademici</p>
               </div>
             </div>
-            <div className="er-card-body" style={{ paddingTop: 0 }}>
-              <AlunnoForm onSuccess={handleAdd} />
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="er-btn er-btn-ghost" style={{ gap: 6, fontSize: 13 }}><Filter size={13} /> Filtra</button>
+              <button className="er-btn er-btn-primary" style={{ gap: 6, fontSize: 13 }} onClick={() => setShowForm(v => !v)}>
+                <PlusCircle size={13} /> Nuovo alunno
+              </button>
             </div>
           </div>
-        )}
 
-        {/* Tabella */}
-        <div className="er-card">
-          <div className="er-table-toolbar">
-            <div className="er-search er-search--table">
-              <Search size={14} strokeWidth={1.8} className="er-search-icon" />
-              <input
-                className="er-search-input"
-                placeholder="Cerca per nome, email, matricola…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div style={{ display: 'grid', gridTemplateColumns: showForm ? '1fr 380px' : '1fr', gap: 18, alignItems: 'start' }}>
+
+            {/* Table */}
+            <div className="er-card anim-fade-in" style={{ padding: '20px 22px' }}>
+              {/* Search */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
+                <div className="er-search" style={{ maxWidth: 280 }}>
+                  <Search size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <input placeholder="Cerca per nome, email..." />
+                </div>
+                <button className="er-icon-btn"><MoreHorizontal size={15} /></button>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table className="er-table">
+                  <thead>
+                    <tr>
+                      <th>STUDENTE</th>
+                      <th>EMAIL</th>
+                      <th>CITTÀ</th>
+                      <th>ANNO</th>
+                      <th>STATO</th>
+                      <th>DETTAGLI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading && (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>Caricamento...</td></tr>
+                    )}
+                    {!loading && alunni.length === 0 && (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>Nessun alunno disponibile.</td></tr>
+                    )}
+                    {!loading &&
+                      alunni.map((a, i) => (
+                        <tr key={a.matricola ?? i}>
+                          <td>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                              <div
+                                style={{
+                                  width: 38,
+                                  height: 38,
+                                  borderRadius: "50%",
+                                  background: gradients[i % gradients.length],
+                                  color: "#fff",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontWeight: 700,
+                                  fontSize: 14,
+                                }}
+                              >
+                                {a.nome?.charAt(0)}
+                                {a.cognome?.charAt(0)}
+                              </div>
+
+                              <div>
+                                <div
+                                  style={{
+                                    fontWeight: 600,
+                                    color: "var(--text-h)",
+                                  }}
+                                >
+                                  {a.nome} {a.cognome}
+                                </div>
+
+                                <div
+                                  style={{
+                                    fontSize: 12,
+                                    color: "var(--text-muted)",
+                                  }}
+                                >
+                                  {a.matricola}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>{a.email}</td>
+                          <td>{a.citta || "-"}</td>
+                          <td>{a.annoCorso}</td>
+                          <td>
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                padding: "4px 10px",
+                                borderRadius: 999,
+                                background: "#45b16e",
+                                color: "#ffffff",
+                                fontSize: 12,
+                                fontWeight: 600,
+                              }}
+                            >
+                              Attivo
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => navigate(`/alunni/${a.matricola}`)}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "var(--text-muted)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "5px 19px",
+                                borderRadius: 8,
+                                transition: "0.2s",
+                              }}
+                              title="Dettagli"
+                              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+                            >
+                              <Info size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <button className="er-btn er-btn--ghost er-btn--sm">
-              <Filter size={13} strokeWidth={1.8} />
-              Filtri
-              <ChevronDown size={12} strokeWidth={2} />
-            </button>
-            <span className="er-table-count">
-              {loading ? '…' : `${filtered.length} studenti`}
-            </span>
+
+            {/* Form panel */}
+            {showForm && (
+              <div className="er-card anim-fade-up" style={{ padding: '22px 22px' }}>
+                <div style={{ marginBottom: 18 }}>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-h)', marginBottom: 4 }}>
+                    Nuovo profilo
+                  </h3>
+                  <p style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>Compila i campi per aggiungere uno studente</p>
+                </div>
+                <div style={{ background: 'var(--bg-input)', borderRadius: 10, padding: '10px 14px', marginBottom: 18, fontSize: 12.5, color: 'var(--text-muted)', borderLeft: '3px solid var(--accent)' }}>
+                  Email e password sono obbligatorie per completare l'iscrizione.
+                </div>
+                <AlunnoForm onSuccess={handleAdd} />
+              </div>
+            )}
           </div>
 
-          <div className="er-table-wrap">
-            <table className="er-table">
-              <thead>
-                <tr>
-                  <th>Studente</th>
-                  <th>Email</th>
-                  <th>Anno</th>
-                  <th>Città</th>
-                  <th>Stato</th>
-                  <th style={{ width: 48 }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && (
-                  <tr><td colSpan={6} className="er-table-empty">Caricamento…</td></tr>
-                )}
-                {!loading && filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="er-table-empty">
-                      {search ? 'Nessun risultato.' : 'Nessun alunno disponibile.'}
-                    </td>
-                  </tr>
-                )}
-                {!loading && filtered.map((a) => (
-                  <tr
-                    key={a.matricola ?? a.email}
-                    className="er-table-row"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => a.matricola && navigate(`/alunni/alunno?matricola=${a.matricola}`)}
-                  >
-                    <td>
-                      <div className="er-table-student">
-                        <div className="er-avatar er-avatar--sm">
-                          {(a.nome || '?').charAt(0)}{(a.cognome || '?').charAt(0)}
-                        </div>
-                        <div>
-                          <p className="er-table-name">{a.nome} {a.cognome}</p>
-                          <p className="er-table-mat">{a.matricola ?? '—'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="er-table-muted">{a.email || '—'}</td>
-                    <td className="er-table-muted">{a.annoCorso || '—'}</td>
-                    <td className="er-table-muted">{a.citta || '—'}</td>
-                    <td><span className="er-status er-status--active">Attivo</span></td>
-                    <td>
-                      <button
-                        className="er-btn er-btn--ghost er-btn--sm"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/alunni/alunno?matricola=${a.matricola}`); }}
-                        title="Vai al profilo"
-                      >
-                        <ArrowRight size={13} strokeWidth={2} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

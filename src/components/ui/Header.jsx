@@ -1,64 +1,53 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Search, Bell, LayoutDashboard, Users, BookOpen, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { Search, Bell, Settings2, Calendar } from 'lucide-react';
 
-const nav = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/alunni',    label: 'Alunni',     icon: Users },
-  { to: '/materie',   label: 'Materie',    icon: BookOpen },
-];
-
-export default function Header() {
-  const { pathname } = useLocation();
-  const { dark, toggle } = useTheme();
+export default function Header({ title = 'Dashboard', subtitle }) {
+  const today = new Date().toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 
   return (
-    <header className="er-header">
-      <div className="er-header-inner">
-        <Link to="/" className="er-brand">
-          <div className="er-brand-mark">ER</div>
-          <div className="er-brand-text">
-            <span className="er-brand-name">Exam Register</span>
-            <span className="er-brand-sub">Gestione studenti</span>
-          </div>
-        </Link>
-
-        <nav className="er-nav">
-          {nav.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`er-nav-link${pathname.startsWith(to) ? ' er-nav-link--active' : ''}`}
-            >
-              <Icon size={15} strokeWidth={1.8} />
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="er-header-actions">
-          <div className="er-search">
-            <Search size={14} strokeWidth={1.8} className="er-search-icon" />
-            <input className="er-search-input" placeholder="Cerca…" />
-          </div>
-
-          <button
-            className="er-theme-toggle"
-            onClick={toggle}
-            aria-label={dark ? 'Passa a tema chiaro' : 'Passa a tema scuro'}
-            title={dark ? 'Tema chiaro' : 'Tema scuro'}
-          >
-            {dark
-              ? <Sun size={16} strokeWidth={1.8} />
-              : <Moon size={16} strokeWidth={1.8} />
-            }
-          </button>
-
-          <button className="er-icon-btn" aria-label="Notifiche">
-            <Bell size={16} strokeWidth={1.8} />
-            <span className="er-notif-dot" />
-          </button>
+    <header className="er-topbar">
+      {/* Left: page title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-h)', letterSpacing: '-0.2px' }}>
+            {title}
+          </h2>
+          {subtitle && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>{subtitle}</p>}
         </div>
+      </div>
+
+      {/* Right: actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Date range pill */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 7,
+          background: 'var(--bg-input)', border: '1px solid var(--border)',
+          borderRadius: 9, padding: '6px 12px', fontSize: 12.5, color: 'var(--text)', cursor: 'pointer',
+        }}>
+          <Calendar size={13} />
+          <span>{today}</span>
+        </div>
+
+        {/* Search */}
+        <div className="er-search" style={{ minWidth: 190 }}>
+          <Search size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          <input placeholder="Cerca..." />
+        </div>
+
+        {/* Notifications */}
+        <button className="er-icon-btn" style={{ position: 'relative' }}>
+          <Bell size={15} />
+          <span style={{
+            position: 'absolute', top: 7, right: 7,
+            width: 6, height: 6, borderRadius: '50%',
+            background: 'var(--accent)', border: '1.5px solid var(--bg-card)',
+          }} />
+        </button>
+
+        {/* Settings */}
+        <button className="er-icon-btn"><Settings2 size={15} /></button>
+
+        {/* Avatar */}
+        <div className="er-avatar">AM</div>
       </div>
     </header>
   );
