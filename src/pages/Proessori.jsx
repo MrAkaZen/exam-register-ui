@@ -1,4 +1,4 @@
-export default function ProessoriPage() {
+export default function Professori() {
 
     return (
         <div className="er-shell">

@@ -1,4 +1,4 @@
-export default function StudentCard({ alunno }) {
+export default function AlunnoCard({ alunno }) {
   const born = alunno.dataNascita ? new Date(alunno.dataNascita).toLocaleDateString('it-IT') : null;
 
   return (

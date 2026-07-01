@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { PlusCircle, Search, Filter, MoreHorizontal, Users } from 'lucide-react';
 import Header from '../components/ui/Header';
 import Sidebar from '../components/ui/Sidebar';
-import AlunnoForm from '../components/alunno/alunnoForm';
+import AlunnoForm from '../components/alunno/AlunnoForm';
 import alunnoApi from '../api/alunnoApi';
 import { Info } from "lucide-react";
 
@@ -14,7 +14,7 @@ const gradients = [
   'linear-gradient(135deg, #1d4ed8, #7c3aed)',
 ];
 
-export default function AlunniPage() {
+export default function Alunni() {
   const [alunni, setAlunni] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

@@ -11,7 +11,7 @@ const mockMaterie = [
   { id: 6, nome: 'Sistemi Operativi',       crediti: 6, studenti: 71, ore: 54, colore: '#0369a1' },
 ];
 
-export default function MateriaPage() {
+export default function Materia() {
   return (
     <div className="er-shell">
       <Sidebar />

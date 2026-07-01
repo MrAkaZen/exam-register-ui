@@ -1,39 +1,18 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
-
-export default function StatsCard({ icon: Icon, label, value, hint, trend, trendUp = true, delay = 0, accentColor }) {
+export default function StatsCard({ icon: Icon, label, value, hint, accent }) {
   return (
-    <div className="er-card anim-fade-up" style={{ padding: '20px 22px', animationDelay: `${delay}s` }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--text-muted)', marginBottom: 10 }}>
-            {label}
-          </div>
-          <div className="stat-value" style={{ animationDelay: `${delay + .1}s` }}>{value}</div>
-
-          {(trend || hint) && (
-            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-              {trend && (
-                <span className={trendUp ? 'trend-up' : 'trend-down'} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                  {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                  {trend}
-                </span>
-              )}
-              {hint && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{hint}</span>}
-            </div>
-          )}
+    <div className="rounded-[28px] border border-white/10 bg-slate-900/80 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</div>
+          <div className="mt-4 text-4xl font-semibold text-white">{value}</div>
         </div>
-
         {Icon && (
-          <div style={{
-            width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-            background: accentColor ? accentColor : 'var(--accent-glow)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: accentColor ? '#fff' : 'var(--accent)',
-          }}>
-            <Icon size={18} strokeWidth={1.8} />
+          <div className={`inline-flex h-12 w-12 items-center justify-center rounded-3xl ${accent || 'bg-indigo-500/15 text-indigo-300'}`}>
+            <Icon className="h-6 w-6" />
           </div>
         )}
       </div>
+      {hint && <div className="mt-4 text-sm text-slate-400">{hint}</div>}
     </div>
   );
 }
