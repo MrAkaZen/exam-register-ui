@@ -108,3 +108,39 @@ La `Sidebar` (`src/components/ui/Sidebar.jsx`) contiene i link di navigazione pr
 - **`src/components/ui/StatsCard.jsx`**: era una card a sfondo chiaro (`bg-white/90`, testo `text-slate-950`) inserita in una pagina interamente dark, con effetto "riquadro bianco" fuori contesto. Riscritta in dark theme (`bg-slate-900/80`, testo `text-white`/`text-slate-400`) coerente con le altre card della dashboard e di `AlunniPage`.
 - **`src/components/alunno/StudentCard.jsx`**: usava classi `dark:` (es. `bg-white dark:bg-slate-900`) che non scattano mai in modo affidabile perché l'app non ha un vero toggle di tema (è sempre dark). Il risultato era una card chiara se il sistema operativo dell'utente non era in dark mode, in contrasto col resto dell'interfaccia. Riscritta con la palette dark fissa del progetto (contenitore `bg-slate-950/60`, tag interni `bg-slate-900/70`, testo `text-white`/`text-slate-400`), usata sia in `Dashboard.jsx` (elenco "Ultimi alunni") sia potenzialmente altrove.
 - **`CLAUDE.md`**: introdotta la sezione "Changelog" datata per tracciare le modifiche di ogni sessione da qui in avanti, e aggiunta al §6 la palette dark di riferimento da riusare nei nuovi componenti.
+
+### 2026-07-01 — Sessione 3: fix layout rotto/sovrapposto nella Dashboard
+
+- **`src/index.css`**: causa del bug "layout rotto/sovrapposto ma i colori ci sono" segnalato dall'utente. Il selettore `#root` conteneva ancora le regole del template demo di Vite (`width: 1126px`, `display: flex; flex-direction: column`, `text-align: center`, `border-inline`), pensate per la landing page originale con hero centrato. Queste regole entravano in conflitto con il `grid xl:grid-cols-[280px_1fr]` usato da `Dashboard.jsx`/`AlunniPage.jsx`/`MateriaPage.jsx`, schiacciando/centrando contenuti pensati per un layout a griglia full-width. Rimosse insieme a `h1, h2 { font-size / margin }` (altro residuo dell'hero demo, in conflitto con le utility Tailwind sui titoli di sezione) e al blocco `@media (prefers-color-scheme: dark)` che ridefiniva variabili di tema ormai inutili (l'app è sempre dark, non dipende dalle preferenze del sistema operativo). Aggiornate le variabili `--bg`/`--text`/`--border`/`--code-bg`/`--shadow` ai valori dark fissi e `color-scheme` da `light dark` a `dark`, per coerenza anche sui controlli nativi del browser (es. il calendar picker dell'`<input type="date">` in `AlunnoForm`).
+- **Nota per il futuro**: se si riscontrano ancora disallineamenti "misteriosi" (colori giusti ma posizione/dimensioni sbagliate), controllare per primi eventuali stili globali in `index.css`/`App.css` prima dei componenti — `App.css` in particolare esiste ancora nel repo ma **non è importato da nessuna parte** (`App.jsx` non lo referenzia): è codice morto, va rimosso o tenuto a mente per non confondersi cercando bug lì dentro.
+
+### 2026-07-01 — Sessione 4: correzione diagnosi, allineamento a AlunniPage.jsx
+
+- **Diagnosi della sessione 3 corretta**: la modifica a `src/index.css` (rimozione del blocco `#root`) era una **diagnosi sbagliata**. `AlunniPage.jsx` usa lo stesso `index.css`/lo stesso wrapper `#root` e renderizza correttamente, quindi il problema non poteva essere lì. **`src/index.css` è stato ripristinato alla versione originale.**
+- **`src/pages/Dashboard.jsx`**, **`src/components/ui/StatsCard.jsx`**, **`src/components/alunno/StudentCard.jsx`**: riallineati struttura-per-struttura ai pattern già collaudati in `AlunniPage.jsx`, invece di inventare nuove varianti:
+  - breakpoint delle sezioni interne portato da `xl:` a `lg:` (`grid-cols-3`, `grid-cols-[1.35fr_0.65fr]`), come in `AlunniPage.jsx`, così il comportamento responsive è coerente tra le pagine;
+  - box "annidati" (`StatsCard`, card delle "Azioni rapide", `StudentCard`) portati allo stesso stile pieno `bg-slate-950` con `border border-white/10` usato per i box interni di `AlunniPage.jsx` (es. "Suggerimento"), rimuovendo `backdrop-blur-xl` dai livelli interni: quell'effetto in `AlunniPage.jsx` è riservato solo al box header in cima alla pagina, non alle card annidate;
+  - il box "Azioni rapide" è stato spostato in un `<aside>` con lo stesso wrapper a gradiente (`bg-gradient-to-b from-slate-900/80 to-slate-950/85`) usato dal blocco "Aggiungi nuovo profilo" in `AlunniPage.jsx`, invece di un semplice `div`.
+- **Lezione**: quando un componente ha un fratello che funziona correttamente con lo stesso layout esterno, conviene diffare i due file struttura-per-struttura prima di sospettare il CSS globale.
+
+### 2026-07-01 — Sessione 5: metriche reali in Dashboard (nuovi profili, utenti attivi/inattivi/online, trend mensile)
+
+- **`src/api/statsApi.js`** (nuovo): client per `GET /dashboard/stats`. ⚠️ Endpoint indicativo: va allineato al path reale esposto dal backend Spring Boot, che al momento non è documentato altrove nel repo. Il JSON atteso è:
+  ```json
+  {
+    "newProfilesToday": 0,
+    "newProfilesLast7Days": 0,
+    "currentMonthProfiles": 0,
+    "previousMonthProfiles": 0,
+    "profileGrowth": 0,
+    "growthPercentage": 0.1,
+    "activeUsers30Days": 0,
+    "inactiveUsers90Days": 0,
+    "onlineUsers": 0,
+    "monthlyTrend": [{ "month": "string", "count": 0 }]
+  }
+  ```
+- **`src/hooks/useDashboardStats.js`** (nuovo): stesso pattern di `useAlunni` (fetch in `useEffect`, guardia `mounted`, stato `{ stats, loading, error }`), con un oggetto `EMPTY_STATS` di default per evitare `undefined` mentre la chiamata è in corso o se il backend risponde parzialmente.
+- **`src/components/dashboard/MonthlyTrendChart.jsx`** (nuovo): grafico a barre in SVG puro per `monthlyTrend`, senza aggiungere librerie di charting come dipendenza (nessuna in `package.json` al momento). Segue la palette indigo/slate del resto dell'app.
+- **`src/pages/Dashboard.jsx`**: la vecchia riga di 3 `StatsCard` placeholder ("Totale alunni" / "Nuovi inserimenti" / "Materie attive —") è stata sostituita con 6 card basate sui dati reali di `useDashboardStats`: nuovi profili oggi, nuovi profili (7gg), profili mese corrente (con badge di crescita ↑/↓ e percentuale), utenti attivi (30gg), utenti inattivi (90gg), utenti online ora (con indicatore "live" pulsante). Aggiunta una nuova sezione "Andamento mensile" con `MonthlyTrendChart`. Le sezioni "Ultimi alunni" e "Azioni rapide" restano invariate nello stile.
+- **Da fare quando il backend sarà pronto**: verificare il path reale dell'endpoint statistiche e allinearlo in `statsApi.js` (attualmente `/dashboard/stats`, sotto il prefisso base `/api/v1` già configurato in `axiosConfig.js`).

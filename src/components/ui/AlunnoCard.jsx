@@ -2,7 +2,7 @@ export default function StudentCard({ alunno }) {
   const born = alunno.dataNascita ? new Date(alunno.dataNascita).toLocaleDateString('it-IT') : null;
 
   return (
-    <div className="rounded-[24px] border border-white/5 bg-slate-950/60 p-5 shadow-lg shadow-slate-950/30 transition hover:-translate-y-0.5 hover:shadow-xl">
+    <div className="rounded-[24px] border border-white/10 bg-slate-950 p-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/40">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center text-lg font-semibold">
@@ -18,16 +18,16 @@ export default function StudentCard({ alunno }) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {alunno.telefono && (
-          <div className="rounded-2xl bg-slate-900/70 px-3 py-2 text-sm text-slate-300">📞 {alunno.telefono}</div>
+          <div className="rounded-2xl bg-slate-900 px-3 py-2 text-sm text-slate-300">📞 {alunno.telefono}</div>
         )}
         {born && (
-          <div className="rounded-2xl bg-slate-900/70 px-3 py-2 text-sm text-slate-300">🎂 {born}</div>
+          <div className="rounded-2xl bg-slate-900 px-3 py-2 text-sm text-slate-300">🎂 {born}</div>
         )}
         {alunno.luogoNascita && (
-          <div className="rounded-2xl bg-slate-900/70 px-3 py-2 text-sm text-slate-300">📍 {alunno.luogoNascita}</div>
+          <div className="rounded-2xl bg-slate-900 px-3 py-2 text-sm text-slate-300">📍 {alunno.luogoNascita}</div>
         )}
         {alunno.annoCorso && (
-          <div className="rounded-2xl bg-slate-900/70 px-3 py-2 text-sm text-slate-300">🏫 Anno {alunno.annoCorso}</div>
+          <div className="rounded-2xl bg-slate-900 px-3 py-2 text-sm text-slate-300">🏫 Anno {alunno.annoCorso}</div>
         )}
       </div>
 

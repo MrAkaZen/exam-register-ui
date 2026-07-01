@@ -1,13 +1,13 @@
 export default function StatsCard({ icon: Icon, label, value, hint, accent }) {
   return (
-    <div className="rounded-[28px] border border-white/10 bg-slate-900/80 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</div>
-          <div className="mt-4 text-4xl font-semibold text-white">{value}</div>
+    <div className="er-card anim-fade-up p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">{label}</div>
+          <div className="mt-3 text-3xl font-semibold text-white">{value}</div>
         </div>
         {Icon && (
-          <div className={`inline-flex h-12 w-12 items-center justify-center rounded-3xl ${accent || 'bg-indigo-500/15 text-indigo-300'}`}>
+          <div className={`inline-flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-3xl ${accent || 'bg-indigo-500/15 text-indigo-300'}`}>
             <Icon className="h-6 w-6" />
           </div>
         )}
