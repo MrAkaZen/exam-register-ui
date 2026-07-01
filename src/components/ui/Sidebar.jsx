@@ -1,19 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, BookOpen, BarChart3,
-  Settings, HelpCircle, Home, CreditCard, ArrowUpDown
+  Settings, HelpCircle, Home, CreditCard, ArrowUpDown, GraduationCap
 } from 'lucide-react';
 
 const nav = [
   { section: 'GENERALE', items: [
-    { to: '/dashboard', label: 'Dashboard',   icon: LayoutDashboard },
-    { to: '/alunni',   label: 'Alunni',       icon: Users },
-    { to: '/materie',  label: 'Materie',      icon: BookOpen },
-    { to: '/esami',    label: 'Esami',        icon: CreditCard },
-    { to: '/report',   label: 'Report',       icon: BarChart3 },
+    { to: '/', label: 'Dashboard',                icon: LayoutDashboard },
+    { to: '/alunni',   label: 'Alunni',           icon: Users },
+    { to: '/materie',  label: 'Materie',          icon: BookOpen },
+    { to: '/esami',    label: 'Esami',            icon: CreditCard },
+    { to: '/professori',    label: 'Professori',  icon: GraduationCap },
+    //{ to: '/report',   label: 'Report',       icon: BarChart3 },
   ]},
   { section: 'SUPPORTO', items: [
-    { to: '/',         label: 'Home',         icon: Home },
     { to: '/settings', label: 'Impostazioni', icon: Settings },
     { to: '/help',     label: 'Guida',        icon: HelpCircle },
   ]},
