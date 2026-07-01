@@ -1,17 +1,31 @@
 import { useState, useEffect } from 'react';
-import { alunnoApi } from '../api/alunnoApi';
+import alunnoApi from '../api/alunnoApi';
 
 export function useAlunni() {
-  const [alunni, setAlunni]   = useState([]);
+  const [alunni, setAlunni] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    alunnoApi.getAll()
-      .then((res) => setAlunni(res.data))
-      .catch((err) => setError(err.response?.data?.message))
-      .finally(() => setLoading(false));
+    let mounted = true;
+
+    setLoading(true);
+    alunnoApi
+      .getAll()
+      .then((res) => {
+        if (mounted) setAlunni(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        if (mounted) setError(err.response?.data?.message || err.message || 'Errore sconosciuto');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  return { alunni, loading, error };
+  return { alunni, setAlunni, loading, error };
 }
